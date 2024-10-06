@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth Map - Country Climate & Pollution</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .info-popup {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        h3 {
+            margin: 0;
+            padding-bottom: 5px;
+        }
+        .country-details {
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map with zoom control and zoom interactions disabled
+        var map = L.map('map', {
+            scrollWheelZoom: false,  // Disable scroll wheel zoom
+            doubleClickZoom: false,  // Disable double click zoom
+            zoomControl: false       // Disable zoom control buttons
+        }).setView([20, 0], 2);  // Centered globally
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+
+        // Expanded list of country data with more countries added
+        var countryData = {
+            "USA": {
+                "climate": "Temperate, mostly continental",
+                "pollution": "High air pollution, especially in cities",
+                "co2_emissions": "5.28 metric tons per capita",
+                "water_pollution": "Significant in industrial regions"
+            },
+            "Brazil": {
+                "climate": "Tropical, subtropical in the south",
+                "pollution": "Deforestation is a major issue",
+                "co2_emissions": "2.04 metric tons per capita",
+                "water_pollution": "Moderate in rivers due to agricultural runoff"
+            },
+            "India": {
+                "climate": "Tropical monsoon",
+                "pollution": "Severe air pollution in urban areas",
+                "co2_emissions": "1.91 metric tons per capita",
+                "water_pollution": "High water pollution due to untreated sewage"
+            },
+            "Australia": {
+                "climate": "Arid to semi-arid, temperate in the southeast",
+                "pollution": "Moderate air pollution, high plastic waste",
+                "co2_emissions": "15.37 metric tons per capita",
+                "water_pollution": "Low, but concerns over coastal regions"
+            },
+            "Germany": {
+                "climate": "Temperate and marine",
+                "pollution": "Moderate air pollution",
+                "co2_emissions": "8.70 metric tons per capita",
+                "water_pollution": "Low, but concerns in industrial regions"
+            },
+            "China": {
+                "climate": "Varied; tropical in south, subarctic in north",
+                "pollution": "Severe air pollution in cities",
+                "co2_emissions": "7.38 metric tons per capita",
+                "water_pollution": "High water pollution from industrial waste"
+            },
+            "South Africa": {
+                "climate": "Mostly semi-arid, subtropical along east coast",
+                "pollution": "Moderate air pollution",
+                "co2_emissions": "9.00 metric tons per capita",
+                "water_pollution": "High water pollution in urban areas"
+            },
+            "Russia": {
+                "climate": "Mostly continental, subarctic in the north",
+                "pollution": "Significant air pollution in industrial cities",
+                "co2_emissions": "12.33 metric tons per capita",
+                "water_pollution": "High in industrial areas"
+            },
+            "Canada": {
+                "climate": "Varied: cold in the north, temperate in the south",
+                "pollution": "Moderate air pollution, mainly in cities",
+                "co2_emissions": "15.32 metric tons per capita",
+                "water_pollution": "Low, but concerns about freshwater quality"
+            },
+            "France": {
+                "climate": "Temperate, with hot summers and mild winters",
+                "pollution": "Moderate air pollution in urban areas",
+                "co2_emissions": "4.37 metric tons per capita",
+                "water_pollution": "Low, but concerns in coastal areas"
+            },
+            "Mexico": {
+                "climate": "Varied: tropical in the south, desert in the north",
+                "pollution": "Severe air pollution in cities",
+                "co2_emissions": "3.77 metric tons per capita",
+                "water_pollution": "High in urban areas"
+            },
+            "Italy": {
+                "climate": "Mediterranean; hot, dry summers and mild, wet winters",
+                "pollution": "Moderate air pollution in cities",
+                "co2_emissions": "6.13 metric tons per capita",
+                "water_pollution": "Low, but concerns in industrial areas"
+            },
+            "Pakistan": {
+                "climate": "Mostly hot, dry desert, temperate in northwest",
+                "pollution": "High air pollution in urban areas",
+                "co2_emissions": "0.91 metric tons per capita",
+                "water_pollution": "Severe in urban areas"
+            },
+            "United Kingdom": {
+                "climate": "Temperate maritime",
+                "pollution": "Moderate air pollution, especially in London",
+                "co2_emissions": "5.62 metric tons per capita",
+                "water_pollution": "Low, but concerns in some coastal areas"
+            },
+            "Japan": {
+                "climate": "Varied: tropical in the south, temperate in the north",
+                "pollution": "High air pollution in industrial areas",
+                "co2_emissions": "9.78 metric tons per capita",
+                "water_pollution": "Moderate in urban coastal areas"
+            },
+            "Argentina": {
+                "climate": "Varied: subtropical in the north, subpolar in the south",
+                "pollution": "Moderate air pollution in cities",
+                "co2_emissions": "4.66 metric tons per capita",
+                "water_pollution": "Moderate, especially in Buenos Aires"
+            },
+            "Spain": {
+                "climate": "Mediterranean, with oceanic in the north",
+                "pollution": "Moderate air pollution in cities",
+                "co2_emissions": "5.45 metric tons per capita",
+                "water_pollution": "Low, some concerns in industrial regions"
+            },
+            "Turkey": {
+                "climate": "Temperate; hot, dry summers and mild, wet winters",
+                "pollution": "Moderate air pollution in cities",
+                "co2_emissions": "4.46 metric tons per capita",
+                "water_pollution": "Moderate, especially in coastal regions"
+            },
+            "South Korea": {
+                "climate": "Temperate, with four distinct seasons",
+                "pollution": "Severe air pollution, especially in Seoul",
+                "co2_emissions": "12.15 metric tons per capita",
+                "water_pollution": "Moderate due to industrial runoff"
+            },
+            "Indonesia": {
+                "climate": "Tropical, hot and humid",
+                "pollution": "Moderate air pollution",
+                "co2_emissions": "1.83 metric tons per capita",
+                "water_pollution": "High due to industrial waste"
+            },
+            "Saudi Arabia": {
+                "climate": "Desert, very hot and dry",
+                "pollution": "High air pollution due to industrial activity",
+                "co2_emissions": "19.39 metric tons per capita",
+                "water_pollution": "Moderate, especially in coastal areas"
+            },
+            "Iran": {
+                "climate": "Arid and semi-arid, temperate along the Caspian coast",
+                "pollution": "High air pollution in cities",
+                "co2_emissions": "9.45 metric tons per capita",
+                "water_pollution": "High, especially in industrial regions"
+            },
+            "Egypt": {
+                "climate": "Desert; hot, dry summers and mild winters",
+                "pollution": "High air pollution in Cairo",
+                "co2_emissions": "2.33 metric tons per capita",
+                "water_pollution": "Moderate, concerns in Nile River"
+            },
+            "Thailand": {
+                "climate": "Tropical, with monsoon seasons",
+                "pollution": "Moderate air pollution",
+                "co2_emissions": "3.63 metric tons per capita",
+                "water_pollution": "High, especially in Bangkok"
+            }
+        };
+
+        // Coordinates for each country
+        var countries = {
+            "USA": [37.0902, -95.7129],
+            "Brazil": [-14.2350, -51.9253],
+            "India": [20.5937, 78.9629],
+            "Australia": [-25.2744, 133.7751],
+            "Germany": [51.1657, 10.4515],
+            "China": [35.8617, 104.1954],
+            "South Africa": [-30.5595, 22.9375],
+            "Russia": [61.5240, 105.3188],
+            "Canada": [56.1304, -106.3468],
+            "France": [46.6034, 1.8883],
+            "Mexico": [23.6345, -102.5528],
+            "Italy": [41.8719, 12.5674],
+            "Pakistan": [30.3753, 69.3451],
+            "United Kingdom": [55.3781, -3.4360],
+            "Japan": [36.2048, 138.2529],
+            "Argentina": [-38.4161, -63.6167],
+            "Spain": [40.4637, -3.7492],
+            "Turkey": [38.9637, 35.2433],
+            "South Korea": [35.9078, 127.7669],
+            "Indonesia": [-0.7893, 113.9213],
+            "Saudi Arabia": [23.8859, 45.0792],
+            "Iran": [32.4279, 53.6880],
+            "Egypt": [26.8206, 30.8025],
+            "Thailand": [15.8700, 100.9925]
+        };
+
+        // Loop through each country and add a marker
+        for (var country in countries) {
+            var latlng = countries[country];
+
+            L.marker(latlng).addTo(map)
+                .bindPopup(getPopupContent(country))
+                .on('click', function(e) {
+                    this.openPopup();
+                });
+        }
+
+        // Function to get popup content for each country
+        function getPopupContent(country) {
+            var data = countryData[country];
+            return `
+                <div class="info-popup">
+                    <h3>${country}</h3>
+                    <div class="country-details">
+                        <strong>Climate:</strong> ${data.climate} <br>
+                        <strong>Pollution:</strong> ${data.pollution} <br>
+                        <strong>CO2 Emissions:</strong> ${data.co2_emissions} <br>
+                        <strong>Water Pollution:</strong> ${data.water_pollution}
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
